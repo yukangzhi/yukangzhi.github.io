@@ -1,34 +1,10 @@
-name: Deploy Hexo Blog
-
-on:
-  push:
-    branches: [ main ]  # 触发分支（源码分支）
-
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install Hexo and Dependencies
-        run: |
-          npm install hexo-cli -g
-          npm install
-
-      - name: Generate Static Files
-        run: hexo generate
-
-      - name: Deploy to GitHub Pages
-        env:
-          GIT_USERNAME: ${{ github.actor }}
-          GIT_TOKEN: ${{ secrets.HEXO_DEPLOY_TOKEN }}
-        run: |
-          git config --global user.name "$GIT_USERNAME"
-          git config --global user.email "$GIT_USERNAME@users.noreply.github.com"
-          hexo deploy
+- name: Deploy to GitHub Pages
+  env:
+    GIT_USER: "Your GitHub Username"
+    GIT_EMAIL: "your-email@example.com"
+    REPO_URL: "https://${{ secrets.HEXO_DEPLOY_TOKEN }}@github.com/username/username.github.io.git"
+  run: |
+    git config --global user.name "$GIT_USER"
+    git config --global user.email "$GIT_EMAIL"
+    git remote set-url origin "$REPO_URL"
+    hexo deploy
