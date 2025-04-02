@@ -1,9 +1,39 @@
-- name: Deploy
-  run: |
-    git clone https://${{ secrets.HEXO_DEPLOY_TOKEN }}@github.com/yukangzhi/yukangzhi.github.io.git public
-    cd public
-    git rm -rf .  # 清空目标仓库
-    cp -r ../public/* .  # 复制生成的静态文件
-    git add .
-    git commit -m "Deploy by GitHub Actions"
-    git push origin main
+name: Deploy Jekyll Blog
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'  # 匹配GitHub Pages环境
+
+      - name: Install Dependencies
+        run: |
+          gem install bundler
+          bundle install
+
+      - name: Build
+        run: bundle exec jekyll build
+
+      - name: Deploy
+        env:
+          GIT_USER: "yukangzhi"
+          GIT_EMAIL: "yukz@666.com"
+          REPO_URL: "https://${{ secrets.HEXO_DEPLOY_TOKEN }}@github.com/yukangzhi/yukangzhi.github.io.git"
+        run: |
+          git clone $REPO_URL public
+          cd public
+          git rm -rf .
+          cp -r ../_site/* .
+          git add .
+          git commit -m "Deploy by GitHub Actions"
+          git push origin main
