@@ -2,48 +2,44 @@ name: Deploy Hexo Blog
 
 on:
   push:
-    branches: [ main ]  # 触发自动部署的分支
+    branches: [ main ]
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest  # 使用最新的 Ubuntu 系统
-    
+    runs-on: ubuntu-latest
     steps:
-      # 1. 检出代码（包括子模块，如主题）
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          submodules: 'recursive'  # 确保主题子模块被加载
+          submodules: 'recursive'
 
-      # 2. 设置 Node.js 环境
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'  # 使用 Node.js 20（或你本地使用的版本）
+          node-version: '20'
 
-      # 3. 安装 Hexo 和依赖
-      - name: Install Hexo and Dependencies
+      - name: Install Hexo
         run: |
-          npm install hexo-cli -g  # 全局安装 Hexo
-          npm install  # 安装项目依赖
+          npm install hexo-cli -g
+          npm install
 
-      # 4. 生成静态文件（关键步骤）
       - name: Generate Static Files
         run: |
-          hexo clean  # 清理旧文件
-          hexo generate  # 生成静态文件到 public/ 目录
+          hexo clean
+          hexo generate
 
-      # 5. 部署到 GitHub Pages
       - name: Deploy
         env:
-          GIT_USER: "yukangzhi"
-          GIT_EMAIL: "yukz666@163.com"
+          GIT_USER: "GitHub Actions Bot"
+          GIT_EMAIL: "actions@github.com"
           REPO_URL: "https://${{ secrets.HEXO_DEPLOY_TOKEN }}@github.com/yukangzhi/yukangzhi.github.io.git"
         run: |
-          git clone $REPO_URL public-deploy  # 克隆 Pages 仓库
+          git config --global user.name "$GIT_USER"
+          git config --global user.email "$GIT_EMAIL"
+          git clone $REPO_URL public-deploy
           cd public-deploy
-          git rm -rf .  # 清空仓库（保留 .git）
-          cp -r ../public/* .  # 复制生成的静态文件
+          find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+          cp -r ../public/* .
           git add .
           git commit -m "Deploy by GitHub Actions"
           git push origin main
