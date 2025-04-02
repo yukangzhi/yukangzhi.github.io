@@ -1,10 +1,9 @@
-- name: Deploy to GitHub Pages
-  env:
-    GIT_USER: "yukangzhi"
-    GIT_EMAIL: "yukz666@163.com"
-    REPO_URL: "https://${{ secrets.HEXO_DEPLOY_TOKEN }}@github.com/username/username.github.io.git"
+- name: Deploy
   run: |
-    git config --global user.name "$GIT_USER"
-    git config --global user.email "$GIT_EMAIL"
-    git remote set-url origin "$REPO_URL"
-    hexo deploy
+    git clone https://${{ secrets.HEXO_DEPLOY_TOKEN }}@github.com/yukangzhi/yukangzhi.github.io.git public
+    cd public
+    git rm -rf .  # 清空目标仓库
+    cp -r ../public/* .  # 复制生成的静态文件
+    git add .
+    git commit -m "Deploy by GitHub Actions"
+    git push origin main
