@@ -1,7 +1,7 @@
 - name: Deploy to GitHub Pages
   env:
-    GIT_USER: "Your GitHub Username"
-    GIT_EMAIL: "your-email@example.com"
+    GIT_USER: "yukangzhi"
+    GIT_EMAIL: "yukz666@163.com"
     REPO_URL: "https://${{ secrets.HEXO_DEPLOY_TOKEN }}@github.com/username/username.github.io.git"
   run: |
     git config --global user.name "$GIT_USER"
