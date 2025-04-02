@@ -1,50 +1,49 @@
-name: Deploy Hexo to GitHub Pages
+name: Deploy Hexo Blog
 
 on:
   push:
-    branches:
-      - main  # 当推送到 main 分支时触发
+    branches: [ main ]  # 触发自动部署的分支
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
+  build-and-deploy:
+    runs-on: ubuntu-latest  # 使用最新的 Ubuntu 系统
+    
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      # 1. 检出代码（包括子模块，如主题）
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          submodules: false  # 禁用子模块检查
+          submodules: 'recursive'  # 确保主题子模块被加载
 
+      # 2. 设置 Node.js 环境
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'  # 使用 Node.js 20（或你本地使用的版本）
 
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Install Hexo Git Deployer
+      # 3. 安装 Hexo 和依赖
+      - name: Install Hexo and Dependencies
         run: |
-          npm install hexo-deployer-git --save
-          npm install hexo-cli -g
+          npm install hexo-cli -g  # 全局安装 Hexo
+          npm install  # 安装项目依赖
 
-      - name: Clean and Generate Static Files
+      # 4. 生成静态文件（关键步骤）
+      - name: Generate Static Files
         run: |
-          hexo clean
-          hexo generate
+          hexo clean  # 清理旧文件
+          hexo generate  # 生成静态文件到 public/ 目录
 
-      - name: Configure Git
-        run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-
-      - name: Deploy to GitHub Pages
+      # 5. 部署到 GitHub Pages
+      - name: Deploy
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GIT_USER: "yukangzhi"
+          GIT_EMAIL: "yukz666@163.com"
+          REPO_URL: "https://${{ secrets.HEXO_DEPLOY_TOKEN }}@github.com/yukangzhi/yukangzhi.github.io.git"
         run: |
-          cd public/
-          git init
-          git add -A
-          git commit -m "Create by workflows"
-          git remote add origin https://${{ secrets.GH_TOKEN }}@github.com/yukangzhi/yukangzhi.github.io.git
-          git push origin HEAD:gh-pages -f
+          git clone $REPO_URL public-deploy  # 克隆 Pages 仓库
+          cd public-deploy
+          git rm -rf .  # 清空仓库（保留 .git）
+          cp -r ../public/* .  # 复制生成的静态文件
+          git add .
+          git commit -m "Deploy by GitHub Actions"
+          git push origin main
