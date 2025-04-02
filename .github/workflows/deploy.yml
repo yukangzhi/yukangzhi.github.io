@@ -1,39 +1,50 @@
-name: Deploy Jekyll Blog
+name: Deploy Hexo to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main  # 当推送到 main 分支时触发
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
 
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
         with:
-          ruby-version: '3.1'  # 匹配GitHub Pages环境
+          submodules: false  # 禁用子模块检查
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
 
       - name: Install Dependencies
+        run: npm install
+
+      - name: Install Hexo Git Deployer
         run: |
-          gem install bundler
-          bundle install
+          npm install hexo-deployer-git --save
+          npm install hexo-cli -g
 
-      - name: Build
-        run: bundle exec jekyll build
+      - name: Clean and Generate Static Files
+        run: |
+          hexo clean
+          hexo generate
 
-      - name: Deploy
+      - name: Configure Git
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Deploy to GitHub Pages
         env:
-          GIT_USER: "yukangzhi"
-          GIT_EMAIL: "yukz@666.com"
-          REPO_URL: "https://${{ secrets.HEXO_DEPLOY_TOKEN }}@github.com/yukangzhi/yukangzhi.github.io.git"
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          git clone $REPO_URL public
-          cd public
-          git rm -rf .
-          cp -r ../_site/* .
-          git add .
-          git commit -m "Deploy by GitHub Actions"
-          git push origin main
+          cd public/
+          git init
+          git add -A
+          git commit -m "Create by workflows"
+          git remote add origin https://${{ secrets.GH_TOKEN }}@github.com/yukangzhi/yukangzhi.github.io.git
+          git push origin HEAD:gh-pages -f
