@@ -19,27 +19,19 @@ jobs:
           node-version: '20'
 
       - name: Install Hexo
-        run: |
+        run: 
           npm install hexo-cli -g
           npm install
 
       - name: Generate Static Files
-        run: |
+        run: 
           hexo clean
           hexo generate
 
-      - name: Deploy
-        env:
-          GIT_USER: "GitHub Actions Bot"
-          GIT_EMAIL: "actions@github.com"
-          REPO_URL: "https://${{ secrets.HEXO_DEPLOY_TOKEN }}@github.com/yukangzhi/yukangzhi.github.io.git"
-        run: |
-          git config --global user.name "$GIT_USER"
-          git config --global user.email "$GIT_EMAIL"
-          git clone $REPO_URL public-deploy
-          cd public-deploy
-          find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
-          cp -r ../public/* .
-          git add .
-          git commit -m "Deploy by GitHub Actions"
-          git push origin main
+        - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+         with:
+           github_token: ${{ secrets.GITHUB_TOKEN }}
+           publish_dir: ./public
+           publish_branch: gh-pages  # 指定部署分支
+           keep_files: false  # 完全覆盖目标分支
