@@ -1,43 +1,34 @@
-name: Hexo Auto Deploy
+name: Deploy Hexo Blog
 
-   on:
-     push:
-       branches: [main]  # 监听 main 分支的推送
+on:
+  push:
+    branches: [ main ]  # 触发分支（源码分支）
 
-   jobs:
-     build-and-deploy:
-       runs-on: ubuntu-latest
-       steps:
-       - name: Checkout Source
-         uses: actions/checkout@v4
-         with:
-           submodules: true  # 如果主题是子模块需启用
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-       - name: Setup Node.js
-         uses: actions/setup-node@v4
-         with:
-           node-version: 18  # 与本地 Node 版本一致
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-       - name: Install Dependencies
-         run: |
-           npm install -g hexo-cli
-           npm install
+      - name: Install Hexo and Dependencies
+        run: |
+          npm install hexo-cli -g
+          npm install
 
-       - name: Generate Static Files
-         run: hexo clean && hexo generate
+      - name: Generate Static Files
+        run: hexo generate
 
-       - name: Deploy to GitHub Pages
-         env:
-           DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}  # SSH 私钥
-           # 如果使用 HTTPS，替换为：
-           # GIT_NAME: ${{ secrets.GIT_NAME }}  # GitHub 用户名
-           # GIT_EMAIL: ${{ secrets.GIT_EMAIL }}  # GitHub 邮箱
-           # PAT: ${{ secrets.PAT }}  # Personal Access Token
-         run: |
-           mkdir -p ~/.ssh/
-           echo "$DEPLOY_KEY" > ~/.ssh/id_ed25519
-           chmod 600 ~/.ssh/id_ed25519
-           ssh-keyscan github.com >> ~/.ssh/known_hosts
-           git config --global user.name "你的GitHub用户名"
-           git config --global user.email "你的GitHub邮箱"
-           hexo deploy
+      - name: Deploy to GitHub Pages
+        env:
+          GIT_USERNAME: ${{ github.actor }}
+          GIT_TOKEN: ${{ secrets.HEXO_DEPLOY_TOKEN }}
+        run: |
+          git config --global user.name "$GIT_USERNAME"
+          git config --global user.email "$GIT_USERNAME@users.noreply.github.com"
+          hexo deploy
