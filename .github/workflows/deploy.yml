@@ -18,7 +18,7 @@ jobs:
         cache: 'npm'  # 启用npm缓存
 
     - name: Install Dependencies
-      run: 
+      run: |
         # 全局安装
         npm install hexo-cli -g
         
@@ -32,7 +32,7 @@ jobs:
         npm list --depth=0
 
     - name: Build Site
-      run: 
+      run: |
         hexo clean
         hexo generate --debug
         
