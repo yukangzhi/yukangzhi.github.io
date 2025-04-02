@@ -35,3 +35,21 @@ jobs:
           publish_dir: ./public
           publish_branch: gh-pages  # 指定部署分支
           keep_files: false  # 完全覆盖目标分支
+      - name: Install Dependencies
+        run: 
+          # 确保存在package.json
+          if [ ! -f package.json ]; then
+            npm init -y
+            echo "Created new package.json"
+          fi
+
+        # 安装核心依赖
+          npm install hexo-cli --save
+          npm install hexo --save
+        
+        # 安装其他依赖（如果有）
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
