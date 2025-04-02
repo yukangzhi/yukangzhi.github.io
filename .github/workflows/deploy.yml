@@ -30,8 +30,8 @@ jobs:
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
-         with:
-           github_token: ${{ secrets.GITHUB_TOKEN }}
-           publish_dir: ./public
-           publish_branch: gh-pages  # 指定部署分支
-           keep_files: false  # 完全覆盖目标分支
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          publish_branch: gh-pages  # 指定部署分支
+          keep_files: false  # 完全覆盖目标分支
